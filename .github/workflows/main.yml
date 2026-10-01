@@ -1,0 +1,52 @@
+name: Pintacred Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Verificar Flutter
+        run: flutter --version
+
+      - name: Preparar projeto Android
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android .
+          fi
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Analisar projeto
+        run: flutter analyze
+
+      - name: Gerar APK
+        run: flutter build apk --debug
+
+      - name: Publicar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pintacred-Alpha-0.1-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
